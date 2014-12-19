@@ -1,0 +1,14 @@
+PATH
+  remote: .
+  specs:
+    hash-joiner (0.0.0)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  hash-joiner!
