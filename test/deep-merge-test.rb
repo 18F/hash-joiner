@@ -44,6 +44,14 @@ module HashJoinerTest
       assert_equal [{:foo => false}, {:foo => true}], lhs
     end
 
+    def test_rhs_hash_value_class_must_match_lhs_hash_value_class
+      lhs = {'key' => ['old value']}
+      rhs = {'key' => 'new value'}
+      assert_raises HashJoiner::MergeError do
+        HashJoiner.deep_merge lhs, rhs
+      end
+    end
+
     def test_recursively_merge_hashes
       lhs = {
         'name' => 'mbland',

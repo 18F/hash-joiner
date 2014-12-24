@@ -80,11 +80,24 @@ module HashJoiner
     end
 
     if rhs.instance_of? ::Hash
-      rhs.each do |key,value|
-        if lhs.member? key and mergeable_classes.include? value.class
-          deep_merge(lhs[key], value)
+      rhs.each do |key,rhs_value|
+        lhs_value = lhs[key]
+        lhs_class = lhs_value.class
+        rhs_class = rhs_value.class
+
+        unless lhs_value.nil? or lhs_class == rhs_class
+          booleans = [::TrueClass, ::FalseClass]
+          unless booleans.include? lhs_class and booleans.include? rhs_class
+            raise MergeError.new(
+              "LHS[#{key}] value (#{lhs_value.class}): #{lhs_value}\n" +
+              "RHS[#{key}] value (#{rhs_value.class}): #{rhs_value}")
+          end
+        end
+
+        if mergeable_classes.include? lhs_class
+          deep_merge lhs_value, rhs_value
         else
-          lhs[key] = value
+          lhs[key] = rhs_value
         end
       end
 
