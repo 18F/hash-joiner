@@ -82,16 +82,13 @@ module HashJoiner
     if rhs.instance_of? ::Hash
       rhs.each do |key,rhs_value|
         lhs_value = lhs[key]
-        lhs_class = lhs_value.class
-        rhs_class = rhs_value.class
+        lhs_class = lhs_value == false ? ::TrueClass : lhs_value.class
+        rhs_class = rhs_value == false ? ::TrueClass : rhs_value.class
 
         unless lhs_value.nil? or lhs_class == rhs_class
-          booleans = [::TrueClass, ::FalseClass]
-          unless booleans.include? lhs_class and booleans.include? rhs_class
-            raise MergeError.new(
-              "LHS[#{key}] value (#{lhs_value.class}): #{lhs_value}\n" +
-              "RHS[#{key}] value (#{rhs_value.class}): #{rhs_value}")
-          end
+          raise MergeError.new(
+            "LHS[#{key}] value (#{lhs_value.class}): #{lhs_value}\n" +
+            "RHS[#{key}] value (#{rhs_value.class}): #{rhs_value}")
         end
 
         if mergeable_classes.include? lhs_class
