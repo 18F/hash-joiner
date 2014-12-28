@@ -131,7 +131,7 @@ module HashJoiner
   # +rhs+:: joined data source of type Hash (right-hand side)
   def self.join_data(category, key_field, lhs, rhs)
     rhs_data = rhs[category]
-    return unless rhs_data
+    return lhs unless rhs_data
 
     lhs_data = lhs[category]
     if !(lhs_data and [::Hash, ::Array].include? lhs_data.class)
@@ -141,6 +141,7 @@ module HashJoiner
     else
       self.join_array_data key_field, lhs_data, rhs_data
     end
+    lhs
   end
 
   # Raises JoinError if +h+ is not a Hash, or if
