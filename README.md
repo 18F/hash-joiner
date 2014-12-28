@@ -2,7 +2,9 @@
 
 Performs pruning or one-level promotion of `Hash` attributes (typically labeled `private:`), and deep merges and joins of `Hash` objects. Works on `Array` objects containing `Hash` objects as well.
 
-Downloads and API docs are available on the [hash-joiner RubyGems page](https://rubygems.org/gems/hash-joiner).
+Downloads and API docs are available on the [hash-joiner RubyGems page](https://rubygems.org/gems/hash-joiner). API documentation is written using [YARD markup](http://yardoc.org/).
+
+Contributed by the 18F team, part of the United States General Services Administration: https://18f.gsa.gov/
 
 ### Motivation
 
