@@ -14,7 +14,7 @@ This gem was extracted from [the 18F Hub Joiner plugin](https://github.com/18F/h
 
 The typical use case is to have a YAML file containing both public and private data, with all private data nested within `private:` properties:
 
-```
+```ruby
 > require 'hash-joiner'
 > my_data_collection = {
     'name' => 'mbland', 'full_name' => 'Mike Bland',
@@ -28,7 +28,7 @@ The following examples, except for **Join an Array of Hash values**, all begin w
 
 #### Strip private data
 
-```
+```ruby
 > HashJoiner.remove_data my_data_collection, "private"
 => {"name"=>"mbland", "full_name"=>"Mike Bland"}
 ```
@@ -37,7 +37,7 @@ The following examples, except for **Join an Array of Hash values**, all begin w
 
 This will render `private:` data at the same level as other, nonprivate data:
 
-```
+```ruby
 > HashJoiner.promote_data my_data_collection, "private"
 => {"name"=>"mbland", "full_name"=>"Mike Bland",
     "email"=>"michael.bland@gsa.gov", "location"=>"DCA"}
@@ -45,7 +45,7 @@ This will render `private:` data at the same level as other, nonprivate data:
 
 #### Perform a deep merge with other Hash values
 
-```
+```ruby
 > extra_info = {
   'languages' => ['C++', 'Python'], 'full_name' => 'Michael S. Bland',
   'private' => {
@@ -79,7 +79,7 @@ This will render `private:` data at the same level as other, nonprivate data:
 
 This corresponds to the process of joining different collections of Jekyll-imported data within the 18F Hub, such as joining `site.data['private']['team']` into `site.data['team']`.
 
-```
+```ruby
 > class DummySite
     attr_accessor :data
     def initialize
