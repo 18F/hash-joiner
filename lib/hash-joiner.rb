@@ -176,6 +176,8 @@ module HashJoiner
       lhs_index[i[key_field]] = i
     end
 
+    # TODO(mbland): Make exception-safe by splitting into two loops: one for
+    # the assert; one to modify lhs after all the assertions have succeeded.
     rhs.each do |i|
       self.assert_is_hash_with_key(i, key_field, "RHS element")
       key = i[key_field]
@@ -185,5 +187,6 @@ module HashJoiner
         lhs << i
       end
     end
+    lhs
   end
 end

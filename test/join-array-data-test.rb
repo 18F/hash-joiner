@@ -4,7 +4,9 @@ require "hash-joiner"
 module HashJoinerTest
   class JoinArrayDataTest < ::Minitest::Test
     def test_empty_arrays
-      assert_empty HashJoiner.join_array_data('unused', [], [])
+      lhs = []
+      assert_same lhs, HashJoiner.join_array_data('unused', lhs, [])
+      assert_empty lhs
     end
 
     def test_assert_raises_if_lhs_and_rhs_are_not_arrays
@@ -34,14 +36,14 @@ module HashJoinerTest
     def test_leave_lhs_alone_if_rhs_is_empty
       lhs = [{'key'=>true}]
       rhs = []
-      HashJoiner.join_array_data('key', lhs, rhs)
+      assert_same lhs, HashJoiner.join_array_data('key', lhs, rhs)
       assert_equal [{'key'=>true}], lhs
     end
 
     def test_lhs_matches_rhs_if_lhs_is_empty
       lhs = []
       rhs = [{'key'=>true}]
-      HashJoiner.join_array_data('key', lhs, rhs)
+      assert_same lhs, HashJoiner.join_array_data('key', lhs, rhs)
       assert_equal [{'key'=>true}], lhs
     end
 
@@ -65,7 +67,7 @@ module HashJoinerTest
          'languages' => ['C++', 'Python', 'Ruby'],
         },
       ]
-      HashJoiner.join_array_data('name', lhs, rhs)
+      assert_same lhs, HashJoiner.join_array_data('name', lhs, rhs)
       assert_equal expected, lhs
     end
 
@@ -107,7 +109,7 @@ module HashJoinerTest
          'email' => 'baz.quux@gsa.gov',
         },
       ]
-      HashJoiner.join_array_data('name', lhs, rhs)
+      assert_same lhs, HashJoiner.join_array_data('name', lhs, rhs)
       assert_equal expected, lhs
     end
   end
