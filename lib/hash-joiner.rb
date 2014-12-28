@@ -87,8 +87,8 @@ module HashJoiner
 
         unless lhs_value.nil? or lhs_class == rhs_class
           raise MergeError.new(
-            "LHS[#{key}] value (#{lhs_value.class}): #{lhs_value}\n" +
-            "RHS[#{key}] value (#{rhs_value.class}): #{rhs_value}")
+            "LHS[#{key}] value (#{lhs_class}): #{lhs_value}\n" +
+            "RHS[#{key}] value (#{rhs_class}): #{rhs_value}")
         end
 
         if mergeable_classes.include? lhs_class
