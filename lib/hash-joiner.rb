@@ -112,6 +112,7 @@ module HashJoiner
     elsif rhs.instance_of? ::Array
       lhs.concat rhs
     end
+    lhs
   end
 
   # Raised by join_data() if an error is encountered.
