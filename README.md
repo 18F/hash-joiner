@@ -10,6 +10,14 @@ Contributed by the 18F team, part of the United States General Services Administ
 
 This gem was extracted from [the 18F Hub Joiner plugin](https://github.com/18F/hub/blob/master/_plugins/joiner.rb). That plugin manipulates [Jekyll-imported data](http://jekyllrb.com/docs/datafiles/) by removing or promoting private data, building indices, and performing joins between different data files so that the results appear as unified collections in Jekyll's `site.data` object. It serves as the first stage in a pipeline that also builds cross-references and canonicalizes data before generating static HTML pages and other artifacts.
 
+### Installation
+
+The latest version is: [![Gem Version](https://badge.fury.io/rb/hash-joiner.svg)](http://badge.fury.io/rb/hash-joiner)
+
+```
+$ gem install hash-joiner
+```
+
 ### Usage
 
 The typical use case is to have a YAML file containing both public and private data, with all private data nested within `private:` properties:
@@ -29,6 +37,7 @@ The following examples, except for **Join an Array of Hash values**, all begin w
 #### Strip private data
 
 ```ruby
+# Everything within the `private:` property will be deleted.
 > HashJoiner.remove_data my_data_collection, "private"
 => {"name"=>"mbland", "full_name"=>"Mike Bland"}
 ```
@@ -38,6 +47,8 @@ The following examples, except for **Join an Array of Hash values**, all begin w
 This will render `private:` data at the same level as other, nonprivate data:
 
 ```ruby
+# Everything within the `private:` property will be
+# promoted up one level.
 > HashJoiner.promote_data my_data_collection, "private"
 => {"name"=>"mbland", "full_name"=>"Mike Bland",
     "email"=>"michael.bland@gsa.gov", "location"=>"DCA"}
@@ -53,6 +64,8 @@ This will render `private:` data at the same level as other, nonprivate data:
     },
   }
 
+# The original Hash will have information added for
+# `full_name`, `languages', and `private => location`.
 > HashJoiner.deep_merge my_data_collection, extra_info
 => {"name"=>"mbland", "full_name"=>"Michael S. Bland",
     "private"=>{
@@ -67,6 +80,8 @@ This will render `private:` data at the same level as other, nonprivate data:
     },
   }
 
+# The Hash will now have added information for
+# `languages` and `private => previous_companies`.
 > HashJoiner.deep_merge my_data_collection, extra_info
 => {"name"=>"mbland", "full_name"=>"Michael S. Bland",
     "private"=>{
@@ -80,6 +95,7 @@ This will render `private:` data at the same level as other, nonprivate data:
 This corresponds to the process of joining different collections of Jekyll-imported data within the 18F Hub, such as joining `site.data['private']['team']` into `site.data['team']`.
 
 ```ruby
+# This defines a fake object emulating a Jekyll::Site.
 > class DummySite
     attr_accessor :data
     def initialize
@@ -89,17 +105,26 @@ This corresponds to the process of joining different collections of Jekyll-impor
 
 > site = DummySite.new
 
+# This data would correspond to _data/team.yml
+# in a Jekyll project.
 > site.data['team'] = [
     {'name' => 'mbland', 'languages' => ['C++']},
     {'name' => 'foobar', 'full_name' => 'Foo Bar'},
   ]
 
+# This data would correspond to _data/private/team.yml
+# in a Jekyll project.
 > site.data['private']['team'] = [
     {'name' => 'mbland', 'languages' => ['Python', 'Ruby']},
     {'name' => 'foobar', 'email' => 'foo.bar@gsa.gov'},
     {'name' => 'bazquux', 'email' => 'baz.quux@gsa.gov'},
   ]
 
+# After joining, each element of `site.data['team']` contains
+# the union of the original element and the corresponding
+# element in `site.data['private']['team']`.
+#
+# `site.data['private']` can now be safely discarded.
 > HashJoiner.join_data 'team', 'name', site.data, site.data['private']
 => {"private"=>{
       "team"=>[
