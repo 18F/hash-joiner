@@ -1,32 +1,13 @@
-# Performs pruning or one-level promotion of Hash attributes (typically
-# labeled "private") and deep joins of Hash objects. Works on Array objects
-# containing Hash objects as well.
-#
-# The typical use case is to have a YAML file containing both public and
-# private data, with all private data nested within "private" properties:
-#
-# my_data_collection = {
-#   'name' => 'mbland', 'full_name' => 'Mike Bland',
-#   'private' => {
-#     'email' => 'michael.bland@gsa.gov', 'location' => 'DCA',
-#    },
-# }
-#
-# Contributed by the 18F team, part of the United States
-# General Services Administration: https://18f.gsa.gov/
-#
-# Author: Mike Bland (michael.bland@gsa.gov)
+# @author: Mike Bland (michael.bland@gsa.gov)
 module HashJoiner
   # Recursively strips information from +collection+ matching +key+.
   #
-  # To strip all private data from the example collection in the module
-  # comment:
-  #   HashJoiner.remove_data my_data_collection, "private"
-  # resulting in:
-  #   {'name' => 'mbland', 'full_name' => 'Mike Bland'}
-  #
-  # +collection+:: Hash or Array from which to strip information
-  # +key+:: key determining data to be stripped from +collection+
+  # @param collection [Hash,Array<Hash>] collection from which to strip
+  #   information
+  # @param key [String] property to be stripped from +collection+
+  # @return [Hash,Array<Hash>] +collection+ if +collection+ is a +Hash+ or
+  #   +Array<Hash>+
+  # @return [nil] if +collection+ is not a +Hash+ or +Array<Hash>+
   def self.remove_data(collection, key)
     if collection.instance_of? ::Hash
       collection.delete key
@@ -41,15 +22,12 @@ module HashJoiner
   # same level as +key+ itself. After promotion, each +key+ reference will
   # be deleted.
   #
-  # To promote private data within the example collection in the module
-  # comment, rendering it at the same level as other, nonprivate data:
-  #   HashJoiner.promote_data my_data_collection, "private" 
-  # resulting in:
-  #   {'name' => 'mbland', 'full_name' => 'Mike Bland',
-  #    'email' => 'michael.bland@gsa.gov', 'location' => 'DCA'}
-  #
-  # +collection+:: Hash or Array from which to promote information
-  # +key+:: key determining data to be promoted within +collection+
+  # @param collection [Hash,Array<Hash>] collection in which to promote
+  #   information
+  # @param key [String] property to be promoted within +collection+
+  # @return [Hash,Array<Hash>] +collection+ if +collection+ is a +Hash+ or
+  #   +Array<Hash>+
+  # @return [nil] if +collection+ is not a +Hash+ or +Array<Hash>+
   def self.promote_data(collection, key)
     if collection.instance_of? ::Hash
       if collection.member? key
@@ -76,20 +54,21 @@ module HashJoiner
     end
   end
 
-  # Raised by deep_merge() if lhs and rhs are of different types.
+  # Raised by +deep_merge+ if +lhs+ and +rhs+ are of different types.
+  # @see deep_merge
   class MergeError < ::Exception
   end
 
-  # Performs a deep merge of Hash and Array structures. If the collections
-  # are Hashes, Hash or Array members of +rhs+ will be deep-merged with
-  # any existing members in +lhs+. If the collections are Arrays, the values
-  # from +rhs+ will be appended to lhs.
+  # Performs a deep merge of +Hash+ and +Array+ structures. If the collections
+  # are +Hash+es, +Hash+ or +Array+ members of +rhs+ will be deep-merged with
+  # any existing members in +lhs+. If the collections are +Array+s, the values
+  # from +rhs+ will be appended to +lhs+.
   #
-  # Raises MergeError if lhs and rhs are of different classes, or if they
-  # are of classes other than Hash or Array.
-  #
-  # +lhs+:: merged data sink (left-hand side)
-  # +rhs+:: merged data source (right-hand side)
+  # @param lhs [Hash,Array] merged data sink (left-hand side)
+  # @param rhs [Hash,Array] merged data source (right-hand side)
+  # @return [Hash,Array] +lhs+
+  # @raise [MergeError] if +lhs+ and +rhs+ are of different classes, or if
+  #   they are of classes other than Hash or Array.
   def self.deep_merge(lhs, rhs)
     mergeable_classes = [::Hash, ::Array]
 
@@ -112,25 +91,33 @@ module HashJoiner
     elsif rhs.instance_of? ::Array
       lhs.concat rhs
     end
+    lhs
   end
 
-  # Raised by join_data() if an error is encountered.
+  # Raised by +join_data+ if an error is encountered.
+  # @see join_data
   class JoinError < ::Exception
   end
 
-  # Joins objects in +lhs[category]+ with data from +rhs[category]+. If the
-  # object collections are of type Array of Hash, key_field will be used as
-  # the primary key; otherwise key_field is ignored.
+  # Joins objects in +lhs+[category] with data from +rhs+[category]. If the
+  # +category+ objects are of type +Array<Hash>+, +key_field+ will be used as
+  # the primary key to join the objects in the two collections; otherwise
+  # +key_field+ is ignored.
   #
-  # Raises JoinError if an error is encountered.
-  #
-  # +category+:: determines member of +lhs+ to join with +rhs+
-  # +key_field+:: if specified, primary key for Array of joined objects
-  # +lhs+:: joined data sink of type Hash (left-hand side)
-  # +rhs+:: joined data source of type Hash (right-hand side)
+  # @param category [String] determines member of +lhs+ to join with +rhs+
+  # @param key_field [String] primary key for objects in each +Array<Hash>+
+  #   collection specified by +category+
+  # @param lhs [Hash,Array<Hash>] joined data sink of type Hash (left-hand
+  #   side)
+  # @param rhs [Hash,Array<Hash>] joined data source of type Hash (right-hand
+  #   side)
+  # @return [Hash,Array<Hash>] +lhs+
+  # @raise [JoinError] if an error is encountered
+  # @see deep_merge
+  # @see join_array_data
   def self.join_data(category, key_field, lhs, rhs)
     rhs_data = rhs[category]
-    return unless rhs_data
+    return lhs unless rhs_data
 
     lhs_data = lhs[category]
     if !(lhs_data and [::Hash, ::Array].include? lhs_data.class)
@@ -140,10 +127,17 @@ module HashJoiner
     else
       self.join_array_data key_field, lhs_data, rhs_data
     end
+    lhs
   end
 
-  # Raises JoinError if +h+ is not a Hash, or if
-  # +key_field+ is absent from any element of +lhs+ or +rhs+.
+  # Asserts that +h+ is a hash containing +key+. Used to ensure that a +Hash+
+  # can be joined with another +Hash+ object.
+  #
+  # @raise [JoinError] if +h+ is not a +Hash+, or if +key_field+ is absent
+  #   from any element of +lhs+ or +rhs+.
+  # @return [NilClass] +nil+
+  # @see join_data
+  # @see join_array_data
   def self.assert_is_hash_with_key(h, key, error_prefix)
     if !h.instance_of? ::Hash
       raise JoinError.new("#{error_prefix} is not a Hash: #{h}")
@@ -152,17 +146,20 @@ module HashJoiner
     end
   end
 
-  # Joins data in the +lhs+ Array with data from the +rhs+ Array based on
-  # +key_field+. Both +lhs+ and +rhs+ should be of type Array of Hash.
-  # Performs a deep_merge on matching objects; assigns values from +rhs+ to
-  # +lhs+ if no corresponding object yet exists in lhs.
+  # Joins data in +lhs+ with data from +rhs+ based on +key_field+. Both +lhs+
+  # and +rhs+ should be of type +Array<Hash>+. Performs a +deep_merge+ on
+  # matching objects; assigns values from +rhs+ to +lhs+ if no corresponding
+  # value yet exists in +lhs+.
   #
-  # Raises JoinError if either lhs or rhs is not an Array of Hash, or if
-  # +key_field+ is absent from any element of +lhs+ or +rhs+.
-  #
-  # +key_field+:: primary key for joined objects
-  # +lhs+:: joined data sink (left-hand side)
-  # +rhs+:: joined data source (right-hand side)
+  # @param key_field [String] primary key for joined objects
+  # @param lhs [Array<Hash>] joined data sink (left-hand side)
+  # @param rhs [Array<Hash>] joined data source (right-hand side)
+  # @return [Array<Hash>] +lhs+
+  # @raise [JoinError] if either +lhs+ or +rhs+ is not an +Array<Hash>+, or if
+  #   +key_field+ is absent from any element of +lhs+ or +rhs+
+  # @see deep_merge
+  # @see join_data
+  # @see assert_is_hash_with_key
   def self.join_array_data(key_field, lhs, rhs)
     unless lhs.instance_of? ::Array and rhs.instance_of? ::Array
       raise JoinError.new("Both lhs (#{lhs.class}) and " +
@@ -175,6 +172,8 @@ module HashJoiner
       lhs_index[i[key_field]] = i
     end
 
+    # TODO(mbland): Make exception-safe by splitting into two loops: one for
+    # the assert; one to modify lhs after all the assertions have succeeded.
     rhs.each do |i|
       self.assert_is_hash_with_key(i, key_field, "RHS element")
       key = i[key_field]
@@ -184,5 +183,6 @@ module HashJoiner
         lhs << i
       end
     end
+    lhs
   end
 end

@@ -1,5 +1,6 @@
+require_relative "../lib/hash-joiner"
+require_relative "test_helper"
 require "minitest/autorun"
-require "hash-joiner"
 
 module HashJoinerTest
   class RemoveDataTest < ::Minitest::Test
@@ -11,30 +12,41 @@ module HashJoinerTest
     end
 
     def test_ignore_empty_collections
-      assert_equal({}, HashJoiner.remove_data({}, 'private'))
-      assert_equal([], HashJoiner.remove_data([], 'private'))
+      empty_hash = {}
+      assert_same empty_hash, HashJoiner.remove_data(empty_hash, 'private')
+      assert_empty empty_hash
+      empty_list = []
+      assert_same empty_list, HashJoiner.remove_data(empty_list, 'private')
+      assert_empty empty_list
     end
 
     def test_remove_top_level_private_data_from_hash
-      assert_equal({'name' => 'mbland', 'full_name' => 'Mike Bland'},
-        HashJoiner.remove_data(
-          {'name' => 'mbland', 'full_name' => 'Mike Bland',
-           'private' => {'email' => 'michael.bland@gsa.gov'}}, 'private'))
+      data = {
+        'name' => 'mbland', 'full_name' => 'Mike Bland',
+        'private' => {'email' => 'michael.bland@gsa.gov'}
+        }
+      assert_same data, HashJoiner.remove_data(data, 'private')
+      assert_equal({'name' => 'mbland', 'full_name' => 'Mike Bland'}, data)
     end
 
     def test_remove_top_level_private_data_from_array
-      assert_equal([{'name' => 'mbland', 'full_name' => 'Mike Bland'}],
-        HashJoiner.remove_data(
-          [{'name' => 'mbland', 'full_name' => 'Mike Bland'},
-           {'private' => {'name' => 'foobar'}}], 'private'))
+      data = [
+        {'name' => 'mbland', 'full_name' => 'Mike Bland'},
+        {'private' => {'name' => 'foobar'}}
+        ]
+      assert_same data, HashJoiner.remove_data(data, 'private')
+      assert_equal([{'name' => 'mbland', 'full_name' => 'Mike Bland'}], data)
     end
 
     def test_remove_private_data_from_object_array_at_different_depths
-      assert_equal([{'name' => 'mbland', 'full_name' => 'Mike Bland'}],
-        HashJoiner.remove_data(
-          [{'name' => 'mbland', 'full_name' => 'Mike Bland',
-            'private' => {'email' => 'michael.bland@gsa.gov'}},
-           {'private' => [{'name' => 'foobar'}]}], 'private'))
+      data = [
+        {'name' => 'mbland', 'full_name' => 'Mike Bland',
+         'private' => {'email' => 'michael.bland@gsa.gov'}
+        },
+        {'private' => [{'name' => 'foobar'}]}
+        ]
+      assert_same data, HashJoiner.remove_data(data, 'private')
+      assert_equal([{'name' => 'mbland', 'full_name' => 'Mike Bland'}], data)
     end
   end
 end

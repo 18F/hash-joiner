@@ -1,5 +1,6 @@
+require_relative "../lib/hash-joiner"
+require_relative "test_helper"
 require "minitest/autorun"
-require "hash-joiner"
 
 module HashJoinerTest
   class PromoteDataTest < ::Minitest::Test
@@ -12,11 +13,11 @@ module HashJoinerTest
 
     def test_no_effect_on_empty_collections
       hash_data = {}
-      HashJoiner.promote_data hash_data, 'private'
+      assert_same hash_data, HashJoiner.promote_data(hash_data, 'private')
       assert_empty hash_data
 
       array_data = []
-      HashJoiner.promote_data array_data, 'private'
+      assert_same array_data, HashJoiner.promote_data(array_data, 'private')
       assert_empty array_data
     end
 
@@ -33,7 +34,7 @@ module HashJoinerTest
         'full_name' => 'Mike Bland',
       }
 
-      HashJoiner.promote_data data, 'private'
+      assert_same data, HashJoiner.promote_data(data, 'private')
       assert_equal expected, data
     end
 
@@ -48,7 +49,7 @@ module HashJoinerTest
         {'name' => 'foobar'},
       ]
 
-      HashJoiner.promote_data data, 'private'
+      assert_same data, HashJoiner.promote_data(data, 'private')
       assert_equal expected, data
     end
 
@@ -84,7 +85,7 @@ module HashJoinerTest
         },
       ]
 
-      HashJoiner.promote_data data, 'private'
+      assert_same data, HashJoiner.promote_data(data, 'private')
       assert_equal expected, data
     end
 
@@ -118,7 +119,7 @@ module HashJoinerTest
         ],
       }
 
-      HashJoiner.promote_data data, 'private'
+      assert_same data, HashJoiner.promote_data(data, 'private')
       assert_equal expected, data
     end
   end

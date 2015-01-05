@@ -1,5 +1,6 @@
+require_relative "../lib/hash-joiner"
+require_relative "test_helper"
 require "minitest/autorun"
-require "hash-joiner"
 
 module HashJoinerTest
   class DeepMergeTest < ::Minitest::Test
@@ -18,28 +19,28 @@ module HashJoinerTest
     def test_merge_into_empty_hash
       lhs = {}
       rhs = {:foo => true}
-      HashJoiner.deep_merge lhs, rhs
+      assert_same lhs, HashJoiner.deep_merge(lhs, rhs)
       assert_equal rhs, lhs
     end
 
     def test_merge_into_empty_array
       lhs = []
       rhs = [{:foo => true}]
-      HashJoiner.deep_merge lhs, rhs
+      assert_same lhs, HashJoiner.deep_merge(lhs, rhs)
       assert_equal rhs, lhs
     end
 
     def test_rhs_hash_overwrites_nonmergeable_lhs_hash_values
       lhs = {:foo => false}
       rhs = {:foo => true}
-      HashJoiner.deep_merge lhs, rhs
+      assert_same lhs, HashJoiner.deep_merge(lhs, rhs)
       assert_equal rhs, lhs
     end
 
     def test_rhs_appends_values_to_lhs
       lhs = [{:foo => false}]
       rhs = [{:foo => true}]
-      HashJoiner.deep_merge lhs, rhs
+      assert_same lhs, HashJoiner.deep_merge(lhs, rhs)
       assert_equal [{:foo => false}, {:foo => true}], lhs
     end
 
@@ -62,7 +63,7 @@ module HashJoinerTest
           'les_pauls' => 1,
           },
         }
-      HashJoiner.deep_merge lhs, rhs
+      assert_same lhs, HashJoiner.deep_merge(lhs, rhs)
 
       expected = {
         'name' => 'mbland',

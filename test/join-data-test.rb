@@ -1,26 +1,27 @@
+require_relative "../lib/hash-joiner"
+require_relative "test_helper"
 require "minitest/autorun"
-require "hash-joiner"
 
 module HashJoinerTest
   class JoinDataTest < ::Minitest::Test
     def test_ignore_if_rhs_empty
       lhs = {'team' => [{'name' => 'mbland'}]}
       rhs = {}
-      HashJoiner.join_data 'team', 'name', lhs, rhs
+      assert_same lhs, HashJoiner.join_data('team', 'name', lhs, rhs)
       assert_equal({'team' => [{'name' => 'mbland'}]}, lhs)
     end
 
     def test_assign_value_if_lhs_empty
       lhs = {}
       rhs = {'team' => [{'name' => 'mbland'}]}
-      HashJoiner.join_data 'team', 'name', lhs, rhs
+      assert_same lhs, HashJoiner.join_data('team', 'name', lhs, rhs)
       assert_equal rhs, lhs
     end
 
     def test_overwrite_nonmergeable_values
       lhs = {'team' => 'mbland'}
       rhs = {'team' => 'foobar'}
-      HashJoiner.join_data 'team', 'name', lhs, rhs
+      assert_same lhs, HashJoiner.join_data('team', 'name', lhs, rhs)
       assert_equal rhs, lhs
     end
 
@@ -48,7 +49,7 @@ module HashJoinerTest
         },
       }
 
-      HashJoiner.join_data 'team', 'name', lhs, rhs
+      assert_same lhs, HashJoiner.join_data('team', 'name', lhs, rhs)
       assert_equal expected, lhs
     end
 
@@ -73,7 +74,7 @@ module HashJoinerTest
           {'name' => 'bazquux', 'email' => 'baz.quux@gsa.gov'},
         ],
       }
-      HashJoiner.join_data 'team', 'name', lhs, rhs
+      assert_same lhs, HashJoiner.join_data('team', 'name', lhs, rhs)
       assert_equal expected, lhs
     end
   end
