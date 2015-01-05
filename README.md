@@ -1,7 +1,7 @@
 ## hash-joiner Gem
 
 [![Gem Version](https://badge.fury.io/rb/hash-joiner.svg)](http://badge.fury.io/rb/hash-joiner)
-[![Build Status](https://travis-ci.org/18F/hash-joiner.svg?branch=doc-update)](https://travis-ci.org/18F/hash-joiner)
+[![Build Status](https://travis-ci.org/18F/hash-joiner.svg?branch=master)](https://travis-ci.org/18F/hash-joiner)
 [![Code Climate](https://codeclimate.com/github/18F/hash-joiner/badges/gpa.svg)](https://codeclimate.com/github/18F/hash-joiner)
 [![Test Coverage](https://codeclimate.com/github/18F/hash-joiner/badges/coverage.svg)](https://codeclimate.com/github/18F/hash-joiner)
 
