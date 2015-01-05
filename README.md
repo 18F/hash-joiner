@@ -3,6 +3,7 @@
 [![Gem Version](https://badge.fury.io/rb/hash-joiner.svg)](http://badge.fury.io/rb/hash-joiner)
 [![Build Status](https://travis-ci.org/18F/hash-joiner.svg?branch=doc-update)](https://travis-ci.org/18F/hash-joiner)
 [![Code Climate](https://codeclimate.com/github/18F/hash-joiner/badges/gpa.svg)](https://codeclimate.com/github/18F/hash-joiner)
+[![Test Coverage](https://codeclimate.com/github/18F/hash-joiner/badges/coverage.svg)](https://codeclimate.com/github/18F/hash-joiner)
 
 Performs pruning or one-level promotion of `Hash` attributes (typically labeled `private:`), and deep merges and joins of `Hash` objects. Works on `Array` objects containing `Hash` objects as well.
 
