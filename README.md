@@ -1,5 +1,9 @@
 ## hash-joiner Gem
 
+[![Gem Version](https://badge.fury.io/rb/hash-joiner.svg)](http://badge.fury.io/rb/hash-joiner)
+[![Build Status](https://travis-ci.org/18F/hash-joiner.svg?branch=doc-update)](https://travis-ci.org/18F/hash-joiner)
+[![Code Climate](https://codeclimate.com/github/18F/hash-joiner/badges/gpa.svg)](https://codeclimate.com/github/18F/hash-joiner)
+
 Performs pruning or one-level promotion of `Hash` attributes (typically labeled `private:`), and deep merges and joins of `Hash` objects. Works on `Array` objects containing `Hash` objects as well.
 
 Downloads and API docs are available on the [hash-joiner RubyGems page](https://rubygems.org/gems/hash-joiner). API documentation is written using [YARD markup](http://yardoc.org/).
@@ -11,8 +15,6 @@ Contributed by the 18F team, part of the United States General Services Administ
 This gem was extracted from [the 18F Hub Joiner plugin](https://github.com/18F/hub/blob/master/_plugins/joiner.rb). That plugin manipulates [Jekyll-imported data](http://jekyllrb.com/docs/datafiles/) by removing or promoting private data, building indices, and performing joins between different data files so that the results appear as unified collections in Jekyll's `site.data` object. It serves as the first stage in a pipeline that also builds cross-references and canonicalizes data before generating static HTML pages and other artifacts.
 
 ### Installation
-
-The latest version is: [![Gem Version](https://badge.fury.io/rb/hash-joiner.svg)](http://badge.fury.io/rb/hash-joiner)
 
 ```
 $ gem install hash-joiner
