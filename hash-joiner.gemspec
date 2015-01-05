@@ -13,4 +13,5 @@ Gem::Specification.new do |s|
   s.files = ['lib/hash-joiner.rb', 'README.md']
   s.homepage = 'https://github.com/18F/hash-joiner'
   s.license = 'CC0'
+  s.add_development_dependency 'rake'
 end
