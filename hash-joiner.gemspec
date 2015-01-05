@@ -14,4 +14,5 @@ Gem::Specification.new do |s|
   s.homepage = 'https://github.com/18F/hash-joiner'
   s.license = 'CC0'
   s.add_development_dependency 'rake'
+  s.add_development_dependency 'minitest'
 end
