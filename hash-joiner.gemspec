@@ -15,4 +15,5 @@ Gem::Specification.new do |s|
   s.license = 'CC0'
   s.add_development_dependency 'rake'
   s.add_development_dependency 'minitest'
+  s.add_development_dependency 'codeclimate-test-reporter'
 end

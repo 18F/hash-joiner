@@ -1,5 +1,6 @@
+require_relative "../lib/hash-joiner"
+require_relative "test_helper"
 require "minitest/autorun"
-require "hash-joiner"
 
 module HashJoinerTest
   class DeepMergeTest < ::Minitest::Test
