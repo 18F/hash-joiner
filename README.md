@@ -140,6 +140,20 @@ This corresponds to the process of joining different collections of Jekyll-impor
       {"name"=>"bazquux", "email"=>"baz.quux@gsa.gov"}]}
 ```
 
+### Running `filter-yaml-files`
+
+The `filter-yaml-files` program can be used to generate "public" versions of YAML files containing "private" data. For example:
+
+```
+$ export DATA_DIR=../hub/_data
+
+$ filter-yaml-files ${DATA_DIR}/private/{team,projects}.yml -o ${DATA_DIR}/public
+../hub/_data/private/team.yml => ../hub/_data/public/team.yml
+../hub/_data/private/projects.yml => ../hub/_data/public/projects.yml
+```
+
+The `filter-yaml-files` program can also strip other properties besides `private:`, and can promote data contained within a property rather than strip it. Run `filter-yaml-files -h` to see the options that allow this.
+
 ### Contributing
 
 Just fork [18F/hash-joiner](https://github.com/18F/hash-joiner) and start sending pull requests! Feel free to ping [@mbland](https://github.com/mbland) with any questions you may have, especially if the current documentation should've addressed your needs, but didn't.

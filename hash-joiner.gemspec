@@ -11,8 +11,10 @@ Gem::Specification.new do |s|
   s.authors = ['Mike Bland']
   s.email = 'michael.bland@gsa.gov'
   s.files = ['lib/hash-joiner.rb', 'README.md']
+  s.executables << 'filter-yaml-files'
   s.homepage = 'https://github.com/18F/hash-joiner'
   s.license = 'CC0'
+  s.add_runtime_dependency 'safe_yaml'
   s.add_development_dependency 'rake'
   s.add_development_dependency 'minitest'
   s.add_development_dependency 'codeclimate-test-reporter'
