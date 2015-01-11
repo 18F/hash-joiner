@@ -140,7 +140,7 @@ This corresponds to the process of joining different collections of Jekyll-impor
       {"name"=>"bazquux", "email"=>"baz.quux@gsa.gov"}]}
 ```
 
-### Running `filter-yaml-files`
+#### Running `filter-yaml-files`
 
 The `filter-yaml-files` program can be used to generate "public" versions of YAML files containing "private" data. For example:
 
