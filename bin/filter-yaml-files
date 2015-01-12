@@ -111,11 +111,6 @@ unless errors.empty?
   exit 1
 end
 
-OUTPUT_DIR = options[:output_dir]
-PROPERTY = options[:property]
-OPERATION = options[:promote] ? :promote_data : :remove_data
-PARENT_DIR_SIZE = parent_dir.concat(File::SEPARATOR).size
-
 def recursive_mkdir(dirname, parent_dir)
   parent_dir = File::SEPARATOR if dirname.start_with? File::SEPARATOR
   dir_components = dirname.split(File::SEPARATOR)
@@ -126,7 +121,12 @@ def recursive_mkdir(dirname, parent_dir)
   end
 end
 
-recursive_mkdir OUTPUT_DIR, Dir.pwd
+FILTERED_OUTPUT_DIR = options[:output_dir]
+FILTERED_PROPERTY = options[:property]
+FILTER_OPERATION = options[:promote] ? :promote_data : :remove_data
+FILTERED_PARENT_DIR_SIZE = parent_dir.concat(File::SEPARATOR).size
+
+recursive_mkdir FILTERED_OUTPUT_DIR, Dir.pwd
 
 input_files.each do |input_file|
   data = SafeYAML.load_file(input_file, :safe=>true)
@@ -137,13 +137,14 @@ input_files.each do |input_file|
 
   begin
     # Make the output subdirectory hierarchy if necessary.
-    subdirs = File.dirname(input_file)[PARENT_DIR_SIZE..-1] || ''
-    recursive_mkdir subdirs, OUTPUT_DIR
+    subdirs = File.dirname(input_file)[FILTERED_PARENT_DIR_SIZE..-1] || ''
+    recursive_mkdir subdirs, FILTERED_OUTPUT_DIR
 
-    output_file = File.join(OUTPUT_DIR, subdirs, File.basename(input_file))
+    output_file = File.join(FILTERED_OUTPUT_DIR, subdirs,
+      File.basename(input_file))
     open(output_file, 'w') do |outfile|
       puts "#{input_file} => #{output_file}"
-      data = HashJoiner.send OPERATION, data, PROPERTY
+      data = HashJoiner.send FILTER_OPERATION, data, FILTERED_PROPERTY
       outfile.puts data.to_yaml
     end
   rescue SystemCallError => e

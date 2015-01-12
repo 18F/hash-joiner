@@ -145,9 +145,9 @@ This corresponds to the process of joining different collections of Jekyll-impor
 The `filter-yaml-files` program can be used to generate "public" versions of YAML files containing "private" data. For example:
 
 ```
-$ export DATA_DIR=../hub/_data
+$ export HUB_DATA_DIR=../hub/_data
 
-$ filter-yaml-files ${DATA_DIR}/private/{team,projects}.yml -o ${DATA_DIR}/public
+$ filter-yaml-files ${HUB_DATA_DIR}/private/{team,projects}.yml -o ${HUB_DATA_DIR}/public
 ../hub/_data/private/team.yml => ../hub/_data/public/team.yml
 ../hub/_data/private/projects.yml => ../hub/_data/public/projects.yml
 ```
