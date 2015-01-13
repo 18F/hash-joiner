@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = 'hash-joiner'
-  s.version = '0.0.2'
+  s.version = '0.0.3'
   s.summary = (
     'Module for pruning, promoting, deep-merging, and joining Hash data')
   s.description = (
