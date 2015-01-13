@@ -1,0 +1,159 @@
+#! /usr/bin/env ruby
+# hash-joiner - Pruning, promoting, deep-merging, and joining Hash data
+#
+# Written in 2015 by Mike Bland (michael.bland@gsa.gov)
+# on behalf of the 18F team, part of the US General Services Administration:
+# https://18f.gsa.gov/
+#
+# To the extent possible under law, the author(s) have dedicated all copyright
+# and related and neighboring rights to this software to the public domain
+# worldwide. This software is distributed without any warranty.
+#
+# You should have received a copy of the CC0 Public Domain Dedication along
+# with this software. If not, see
+# <https://creativecommons.org/publicdomain/zero/1.0/>.
+#
+# ---
+#
+# Script to generate 'public' versions of 'private' YAML files.
+#
+# The command line flags support stripping object properties other than
+# `private:`, or promoting the data associated with the property rather than
+# stripping it out.
+#
+# Author: Mike Bland (michael.bland@gsa.gov)
+# Date:   2015-01-11
+
+require 'hash-joiner'
+require 'optparse'
+require 'safe_yaml'
+
+options = {
+  :property => 'private',
+  :output_dir => 'public',
+}
+
+opt_parser = OptionParser.new do |opts|
+  opts.banner = "Usage: #{$0} [-hop] [--promote] [file ...]"
+
+  opts.separator ''
+  opts.separator <<EOF
+By default, reads a collection of YAML files containing "private" data, i.e.
+objects containing a `private:` property, and generates new files with the
+private data stripped out.
+
+Using the option flags, other properties besides `private:` can be removed, or
+the data associated with the target PROPERTY can be promoted rather than
+stripped.
+
+All input files should come from the same parent directory. This is because
+the directory structure beneath the parent directory will be preserved in the
+OUTPUT_DIR.
+
+Options:
+EOF
+
+  opts.on('-h', '--help', "Show this help") do
+    puts opts
+    exit
+  end
+
+  opts.on('-p', '--property PROPERTY',
+    'Property to strip/promote ' +
+    "(default: #{options[:property]})") do |property|
+    options[:property] = property
+  end
+
+  opts.on('-o', '--output_dir OUTPUT_DIR',
+    "Output directory (default: #{options[:output_dir]})") do |output_dir|
+    options[:output_dir] = output_dir
+  end
+
+  opts.on('--promote',
+    'Promote the PROPERTY rather than strip it') do |promote|
+    options[:promote] = promote
+  end
+end
+opt_parser.parse!
+
+if ARGV.length < 1
+  STDERR.puts 'No input files specified'
+  exit 1
+end
+
+input_files = []
+errors = []
+parent_dir = ''
+
+ARGV.each do |input_file|
+  current_parent_dir = File.dirname input_file
+  parent_dir = current_parent_dir if parent_dir.empty?
+  unless (parent_dir.start_with? current_parent_dir or
+    current_parent_dir.start_with? parent_dir)
+    STDERR.puts 'All input files should come from the same parent directory.'
+    STDERR.puts "Detected: #{parent_dir} and #{current_parent_dir}"
+    exit 1
+  end
+  parent_dir = current_parent_dir if current_parent_dir.size < parent_dir.size
+
+  if !File.exists? input_file
+    errors << "File does not exist: #{input_file}"
+  elsif !File.readable? input_file
+    errors << "File not readable: #{input_file}"
+  else
+    input_files << input_file
+  end
+end
+
+unless errors.empty?
+  STDERR.puts errors.join "\n"
+  STDERR.puts "Aborting; no files processed."
+  exit 1
+end
+
+def recursive_mkdir(dirname, parent_dir)
+  parent_dir = File::SEPARATOR if dirname.start_with? File::SEPARATOR
+  dir_components = dirname.split(File::SEPARATOR)
+  current_subdir = parent_dir
+  until dir_components.empty?
+    current_subdir = File.join(current_subdir, dir_components.shift)
+    Dir.mkdir(current_subdir) unless Dir.exists? current_subdir
+  end
+end
+
+FILTERED_OUTPUT_DIR = options[:output_dir]
+FILTERED_PROPERTY = options[:property]
+FILTER_OPERATION = options[:promote] ? :promote_data : :remove_data
+FILTERED_PARENT_DIR_SIZE = parent_dir.concat(File::SEPARATOR).size
+
+recursive_mkdir FILTERED_OUTPUT_DIR, Dir.pwd
+
+input_files.each do |input_file|
+  data = SafeYAML.load_file(input_file, :safe=>true)
+  unless data
+    errors << "Failed to parse #{source}"
+    next
+  end
+
+  begin
+    # Make the output subdirectory hierarchy if necessary.
+    subdirs = File.dirname(input_file)[FILTERED_PARENT_DIR_SIZE..-1] || ''
+    recursive_mkdir subdirs, FILTERED_OUTPUT_DIR
+
+    output_file = File.join(FILTERED_OUTPUT_DIR, subdirs,
+      File.basename(input_file))
+    open(output_file, 'w') do |outfile|
+      puts "#{input_file} => #{output_file}"
+      data = HashJoiner.send FILTER_OPERATION, data, FILTERED_PROPERTY
+      outfile.puts data.to_yaml
+    end
+  rescue SystemCallError => e
+    errors << e.to_s
+  end
+end
+
+unless errors.empty?
+  STDERR.puts "\n*** Errors:"
+  STDERR.puts errors.join "\n"
+  exit 1
+end
