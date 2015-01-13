@@ -30,33 +30,71 @@ module HashJoiner
   # @return [nil] if +collection+ is not a +Hash+ or +Array<Hash>+
   def self.promote_data(collection, key)
     if collection.instance_of? ::Hash
-      if collection.member? key
-        data_to_promote = collection[key]
-        collection.delete key
-        deep_merge collection, data_to_promote
-      end
-      collection.each_value {|i| promote_data i, key}
-
+      promote_hash_data collection, key
     elsif collection.instance_of? ::Array
-      collection.each do |i|
-        # If the Array entry is a hash that contains only the target key,
-        # then that key should map to an Array to be promoted.
-        if i.instance_of? ::Hash and i.keys == [key]
-          data_to_promote = i[key]
-          i.delete key
-          deep_merge collection, data_to_promote
-        else
-          promote_data i, key
-        end
-      end
-
-      collection.delete_if {|i| i.empty?}
+      promote_array_data collection, key
     end
+  end
+
+  # Recursively promotes data within a Hash. Used to implement promote_data.
+  #
+  # @param collection [Hash] collection in which to promote information
+  # @param key [String] property to be promoted within +collection+
+  # @return [Hash] +collection+ after promotion
+  # @see promote_data
+  def self.promote_hash_data(collection, key)
+    if collection.member? key
+      data_to_promote = collection[key]
+      collection.delete key
+      deep_merge collection, data_to_promote
+    end
+    collection.each_value {|i| promote_data i, key}
+  end
+
+  # Recursively promotes data within an Array. Used to implement promote_data.
+  #
+  # @param collection [Array] collection in which to promote information
+  # @param key [String] property to be promoted within +collection+
+  # @return [Array] +collection+ after promotion
+  # @see promote_data
+  def self.promote_array_data(collection, key)
+    collection.each do |i|
+      # If the Array entry is a hash that contains only the target key,
+      # then that key should map to an Array to be promoted.
+      if i.instance_of? ::Hash and i.keys == [key]
+        data_to_promote = i[key]
+        i.delete key
+        deep_merge collection, data_to_promote
+      else
+        promote_data i, key
+      end
+    end
+    collection.delete_if {|i| i.empty?}
   end
 
   # Raised by +deep_merge+ if +lhs+ and +rhs+ are of different types.
   # @see deep_merge
   class MergeError < ::Exception
+  end
+
+  # The set of mergeable classes
+  MERGEABLE_CLASSES = [::Hash, ::Array]
+
+  # Asserts that +lhs+ and +rhs+ are of the same type and can be merged.
+  #
+  # @param lhs [Hash,Array] merged data sink (left-hand side)
+  # @param rhs [Hash,Array] merged data source (right-hand side)
+  # @raise [MergeError] if +lhs+ and +rhs+ are of the different types or are
+  #   of a type that cannot be merged
+  # @return [nil]
+  # @see deep_merge
+  def self.assert_objects_are_mergeable(lhs, rhs)
+    if lhs.class != rhs.class
+      raise MergeError.new("LHS (#{lhs.class}): #{lhs}\n" +
+        "RHS (#{rhs.class}): #{rhs}")
+    elsif !MERGEABLE_CLASSES.include? lhs.class
+      raise MergeError.new "Class not mergeable: #{lhs.class}"
+    end
   end
 
   # Performs a deep merge of +Hash+ and +Array+ structures. If the collections
@@ -70,28 +108,59 @@ module HashJoiner
   # @raise [MergeError] if +lhs+ and +rhs+ are of different classes, or if
   #   they are of classes other than Hash or Array.
   def self.deep_merge(lhs, rhs)
-    mergeable_classes = [::Hash, ::Array]
-
-    if lhs.class != rhs.class
-      raise MergeError.new("LHS (#{lhs.class}): #{lhs}\n" +
-        "RHS (#{rhs.class}): #{rhs}")
-    elsif !mergeable_classes.include? lhs.class
-      raise MergeError.new "Class not mergeable: #{lhs.class}"
-    end
+    assert_objects_are_mergeable lhs, rhs
 
     if rhs.instance_of? ::Hash
-      rhs.each do |key,value|
-        if lhs.member? key and mergeable_classes.include? value.class
-          deep_merge(lhs[key], value)
-        else
-          lhs[key] = value
-        end
-      end
-
+      deep_merge_hashes lhs, rhs
     elsif rhs.instance_of? ::Array
       lhs.concat rhs
     end
     lhs
+  end
+
+  # Asserts that +rhs_value+ can be merged into +lhs_value+ for the property
+  # identified by +key+.
+  #
+  # @param key [String] Hash property name
+  # @param lhs_value [Object] the property value of the data sink Hash
+  #   (left-hand side value)
+  # @param rhs_value [Object] the property value of the data source Hash
+  #   (right-hand side value)
+  # @raise [MergeError] if +lhs_value+ exists and +rhs_value+ is of a
+  #   different class
+  # @return [nil]
+  # @see deep_merge
+  # @see deep_merge_hashes
+  def self.assert_hash_properties_are_mergeable(key, lhs_value, rhs_value)
+    lhs_class = lhs_value == false ? ::TrueClass : lhs_value.class
+    rhs_class = rhs_value == false ? ::TrueClass : rhs_value.class
+
+    unless lhs_value.nil? or lhs_class == rhs_class
+      raise MergeError.new(
+        "LHS[#{key}] value (#{lhs_class}): #{lhs_value}\n" +
+        "RHS[#{key}] value (#{rhs_class}): #{rhs_value}")
+    end
+    nil
+  end
+
+  # Performs a deep merge of Hash structures. Used to implement +deep_merge+.
+  #
+  # @param lhs [Hash] merged data sink (left-hand side)
+  # @param rhs [Hash] merged data source (right-hand side)
+  # @return [Hash] +lhs+
+  # @raise [MergeError] if any value of +rhs+ cannot be merged into +lhs+
+  # @see deep_merge
+  def self.deep_merge_hashes(lhs, rhs)
+    rhs.each do |key,rhs_value|
+      lhs_value = lhs[key]
+      assert_hash_properties_are_mergeable key, lhs_value, rhs_value
+
+      if MERGEABLE_CLASSES.include? lhs_value.class
+        deep_merge lhs_value, rhs_value
+      else
+        lhs[key] = rhs_value
+      end
+    end
   end
 
   # Raised by +join_data+ if an error is encountered.
@@ -133,9 +202,12 @@ module HashJoiner
   # Asserts that +h+ is a hash containing +key+. Used to ensure that a +Hash+
   # can be joined with another +Hash+ object.
   #
+  # @param h [Hash] object to verify
+  # @param key [String] name of the property to verify
+  # @param error_prefix [String] prefix for error message
   # @raise [JoinError] if +h+ is not a +Hash+, or if +key_field+ is absent
   #   from any element of +lhs+ or +rhs+.
-  # @return [NilClass] +nil+
+  # @return [nil]
   # @see join_data
   # @see join_array_data
   def self.assert_is_hash_with_key(h, key, error_prefix)
