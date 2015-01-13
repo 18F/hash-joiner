@@ -2,6 +2,7 @@ PATH
   remote: .
   specs:
     hash-joiner (0.0.1)
+      safe_yaml
 
 GEM
   remote: https://rubygems.org/
@@ -12,6 +13,7 @@ GEM
     minitest (5.5.0)
     multi_json (1.10.1)
     rake (10.4.2)
+    safe_yaml (1.0.4)
     simplecov (0.9.1)
       docile (~> 1.1.0)
       multi_json (~> 1.0)
@@ -22,7 +24,8 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  bundler (~> 1.7)
   codeclimate-test-reporter
   hash-joiner!
   minitest
-  rake
+  rake (~> 10.0)
