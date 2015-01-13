@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    hash-joiner (0.0.1)
+    hash-joiner (0.0.2)
       safe_yaml
 
 GEM
