@@ -285,18 +285,30 @@ module HashJoiner
   # Recursively prunes all empty properties from every element of a
   # collection.
   # @param collection [Hash<String>,Array<Hash<String>>] collection to update
-  # @param array_properties [Array<String>] list of properties to initialize
   def self.prune_empty_properties(collection)
+    prune_empty_properties_helper(collection, {})
+  end
+
+  # Helper of prune_empty_properties that passes a object memoization table to
+  # recursive calls. The table prevents infinite recursion when objects
+  # contain cross-references to one another.
+  # @param collection [Hash<String>,Array<Hash<String>>] collection to update
+  # @param collection [Hash<String>] memoization table
+  # @return collection
+  def self.prune_empty_properties_helper(collection, seen_before)
+    return collection if seen_before[collection.object_id]
+    seen_before[collection.object_id] = true
     if collection.instance_of? ::Hash
-      collection.each_value {|i| prune_empty_properties i}
+      collection.each_value {|i| prune_empty_properties_helper i, seen_before}
       collection.delete_if do |unused_key, value|
         (value.instance_of? ::Hash or value.instance_of? ::Array or
          value.instance_of? ::String) and value.empty?
       end
     elsif collection.instance_of? ::Array
-      collection.each {|i| prune_empty_properties i}
+      collection.each {|i| prune_empty_properties_helper i, seen_before}
       collection.delete_if {|i| i.empty?}
     end
     collection
   end
+  private_class_method :prune_empty_properties_helper
 end
