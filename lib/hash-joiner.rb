@@ -270,10 +270,9 @@ module HashJoiner
   def self.assign_empty_defaults(collection, array_properties, hash_properties,
     string_properties)
     if collection.instance_of? ::Hash
-      h = collection
-      array_properties.each {|i| h[i] = Array.new unless collection[i]}
-      hash_properties.each {|i| h[i] = Hash.new unless collection[i]}
-      string_properties.each {|i| h[i] = String.new unless collection[i]}
+      array_properties.each {|i| collection[i] ||= Array.new}
+      hash_properties.each {|i| collection[i] ||= Hash.new}
+      string_properties.each {|i| collection[i] ||= String.new}
     elsif collection.instance_of? ::Array
       collection.each do |i|
         assign_empty_defaults(i,
