@@ -257,4 +257,46 @@ module HashJoiner
     end
     lhs
   end
+
+  # Given a collection, initialize any missing properties to empty values.
+  # @param collection [Hash<String>,Array<Hash<String>>] collection to update
+  # @param array_properties [Array<String>] list of properties to initialize
+  #   with an empty Array
+  # @param hash_properties [Array<String>] list of properties to initialize
+  #   with an empty Hash
+  # @param string_properties [Array<String>] list of properties to initialize
+  #   with an empty String
+  # @return collection
+  def self.assign_empty_defaults(collection, array_properties, hash_properties,
+    string_properties)
+    if collection.instance_of? ::Hash
+      array_properties.each {|i| collection[i] ||= Array.new}
+      hash_properties.each {|i| collection[i] ||= Hash.new}
+      string_properties.each {|i| collection[i] ||= String.new}
+    elsif collection.instance_of? ::Array
+      collection.each do |i|
+        assign_empty_defaults(i,
+          array_properties, hash_properties, string_properties)
+      end
+    end
+    collection
+  end
+
+  # Recursively prunes all empty properties from every element of a
+  # collection.
+  # @param collection [Hash<String>,Array<Hash<String>>] collection to update
+  # @param array_properties [Array<String>] list of properties to initialize
+  def self.prune_empty_properties(collection)
+    if collection.instance_of? ::Hash
+      collection.each_value {|i| prune_empty_properties i}
+      collection.delete_if do |unused_key, value|
+        (value.instance_of? ::Hash or value.instance_of? ::Array or
+         value.instance_of? ::String) and value.empty?
+      end
+    elsif collection.instance_of? ::Array
+      collection.each {|i| prune_empty_properties i}
+      collection.delete_if {|i| i.empty?}
+    end
+    collection
+  end
 end
