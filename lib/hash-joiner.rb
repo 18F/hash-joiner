@@ -1,4 +1,7 @@
 # @author: Mike Bland (michael.bland@gsa.gov)
+
+require 'hash-joiner/version'
+
 module HashJoiner
   # Recursively strips information from +collection+ matching +key+.
   #
