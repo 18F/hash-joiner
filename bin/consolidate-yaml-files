@@ -1,0 +1,113 @@
+#! /usr/bin/env ruby
+# hash-joiner - Pruning, promoting, deep-merging, and joining Hash data
+#
+# Written in 2015 by Mike Bland (michael.bland@gsa.gov)
+# on behalf of the 18F team, part of the US General Services Administration:
+# https://18f.gsa.gov/
+#
+# To the extent possible under law, the author(s) have dedicated all copyright
+# and related and neighboring rights to this software to the public domain
+# worldwide. This software is distributed without any warranty.
+#
+# You should have received a copy of the CC0 Public Domain Dedication along
+# with this software. If not, see
+# <https://creativecommons.org/publicdomain/zero/1.0/>.
+#
+# ---
+#
+# Script to generate a 'public' Array version of 'private' YAML files.
+#
+# The command line flags support stripping object properties other than
+# `private:`, or promoting the data associated with the property rather than
+# stripping it out.
+#
+# Author: Mike Bland (michael.bland@gsa.gov)
+# Date:   2015-02-18
+
+require 'hash-joiner'
+require 'optparse'
+require 'safe_yaml'
+
+options = {
+  :property => 'private',
+}
+
+opt_parser = OptionParser.new do |opts|
+  opts.banner = "Usage: #{$0} [-hp] [--promote] [file ...]"
+
+  opts.separator ''
+  opts.separator <<EOF
+By default, reads a collection of YAML files containing "private" data, i.e.
+objects containing a `private:` property, and prints a single YAML Array to
+standard output with all the private data stripped out.
+
+Using the option flags, other properties besides `private:` can be removed, or
+the data associated with the target PROPERTY can be promoted rather than
+stripped.
+
+Options:
+EOF
+
+  opts.on('-h', '--help', "Show this help") do
+    puts opts
+    exit
+  end
+
+  opts.on('-p', '--property PROPERTY',
+    'Property to strip/promote ' +
+    "(default: #{options[:property]})") do |property|
+    options[:property] = property
+  end
+
+  opts.on('--promote',
+    'Promote the PROPERTY rather than strip it') do |promote|
+    options[:promote] = promote
+  end
+end
+opt_parser.parse!
+
+if ARGV.length < 1
+  STDERR.puts 'No input files specified'
+  exit 1
+end
+
+input_files = []
+errors = []
+
+ARGV.each do |input_file|
+  if !File.exists? input_file
+    errors << "File does not exist: #{input_file}"
+  elsif !File.readable? input_file
+    errors << "File not readable: #{input_file}"
+  else
+    input_files << input_file
+  end
+end
+
+unless errors.empty?
+  STDERR.puts errors.join "\n"
+  STDERR.puts "Aborting; no files processed."
+  exit 1
+end
+
+FILTERED_PROPERTY = options[:property]
+FILTER_OPERATION = options[:promote] ? :promote_data : :remove_data
+
+result = []
+
+input_files.each do |input_file|
+  data = SafeYAML.load_file(input_file, :safe=>true)
+  if data
+    result << HashJoiner.send(FILTER_OPERATION, data, FILTERED_PROPERTY)
+  else
+    errors << "Failed to parse #{source}" 
+  end
+end
+
+unless errors.empty?
+  STDERR.puts "\n*** Errors:"
+  STDERR.puts errors.join "\n"
+  exit 1
+end
+
+puts result.to_yaml
