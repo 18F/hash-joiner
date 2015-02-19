@@ -28,9 +28,11 @@ The typical use case is to have a YAML file containing both public and private d
 ```ruby
 > require 'hash-joiner'
 > my_data_collection = {
-    'name' => 'mbland', 'full_name' => 'Mike Bland',
+    'name' => 'mbland',
+    'full_name' => 'Mike Bland',
     'private' => {
-      'email' => 'michael.bland@gsa.gov', 'location' => 'DCA',
+      'email' => 'michael.bland@gsa.gov',
+      'location' => 'DCA',
     },
   }
 ```
@@ -42,7 +44,10 @@ The following examples, except for **Join an Array of Hash values**, all begin w
 ```ruby
 # Everything within the `private:` property will be deleted.
 > HashJoiner.remove_data my_data_collection, "private"
-=> {"name"=>"mbland", "full_name"=>"Mike Bland"}
+=> {
+     "name"=>"mbland",
+     "full_name"=>"Mike Bland",
+   }
 ```
 
 #### Promote private data
@@ -53,44 +58,62 @@ This will render `private:` data at the same level as other, nonprivate data:
 # Everything within the `private:` property will be
 # promoted up one level.
 > HashJoiner.promote_data my_data_collection, "private"
-=> {"name"=>"mbland", "full_name"=>"Mike Bland",
-    "email"=>"michael.bland@gsa.gov", "location"=>"DCA"}
+=> {
+     "name"=>"mbland",
+     "full_name"=>"Mike Bland",
+     "email"=>"michael.bland@gsa.gov",
+     "location"=>"DCA",
+   }
 ```
 
 #### Perform a deep merge with other Hash values
 
-```ruby
+```bash
 > extra_info = {
-  'languages' => ['C++', 'Python'], 'full_name' => 'Michael S. Bland',
-  'private' => {
-    'location' => 'Alexandria, VA', 'previous_companies' => ['Google'],
+  "languages" => ["C++", "Python"],
+  "full_name" => "Michael S. Bland",
+  "private" => {
+    "location" => "Alexandria, VA",
+    "previous_companies" => ["Google"],
     },
   }
 
 # The original Hash will have information added for
 # `full_name`, `languages', and `private => location`.
+
 > HashJoiner.deep_merge my_data_collection, extra_info
-=> {"name"=>"mbland", "full_name"=>"Michael S. Bland",
-    "private"=>{
-      "email"=>"michael.bland@gsa.gov", "location"=>"Alexandria, VA",
-      "previous_companies"=>["Google"]},
-    "languages"=>["C++", "Python"]}
+=> {
+     "name"=>"mbland",
+     "full_name"=>"Michael S. Bland",
+     "languages"=>["C++", "Python"],
+     "private"=> {
+       "email"=>"michael.bland@gsa.gov",
+       "location"=>"Alexandria, VA",
+       "previous_companies"=>["Google"],
+      },
+    }
 
 > extra_info = {
-    'languages' => ['Ruby'],
-    'private' => {
-      'previous_companies' => ['Northrop Grumman'],
+    "languages" => ["Ruby"],
+    "private" => {
+      "previous_companies" => ["Northrop Grumman"],
     },
   }
 
 # The Hash will now have added information for
 # `languages` and `private => previous_companies`.
+
 > HashJoiner.deep_merge my_data_collection, extra_info
-=> {"name"=>"mbland", "full_name"=>"Michael S. Bland",
-    "private"=>{
-      "email"=>"michael.bland@gsa.gov", "location"=>"Alexandria, VA",
-      "previous_companies"=>["Google", "Northrop Grumman"]},
-    "languages"=>["C++", "Python", "Ruby"]}
+=> {
+     "name"=>"mbland",
+     "full_name"=>"Michael S. Bland",
+     "languages"=>["C++", "Python", "Ruby"],
+     "private"=> {
+       "email"=>"michael.bland@gsa.gov",
+       "location"=>"Alexandria, VA",
+       "previous_companies"=>["Google", "Northrop Grumman"],
+      },
+   }
 ```
 
 #### Join an Array of Hash values
@@ -129,15 +152,20 @@ This corresponds to the process of joining different collections of Jekyll-impor
 #
 # `site.data['private']` can now be safely discarded.
 > HashJoiner.join_data 'team', 'name', site.data, site.data['private']
-=> {"private"=>{
-      "team"=>[
+=> {
+     "private"=>{
+       "team"=>[
         {"name"=>"mbland", "languages"=>["Python", "Ruby"]},
         {"name"=>"foobar", "email"=>"foo.bar@gsa.gov"},
-        {"name"=>"bazquux", "email"=>"baz.quux@gsa.gov"}]},
-    "team"=>[
+        {"name"=>"bazquux", "email"=>"baz.quux@gsa.gov"}
+       ]
+     },
+     "team"=>[
       {"name"=>"mbland", "languages"=>["C++", "Python", "Ruby"]},
       {"name"=>"foobar", "full_name"=>"Foo Bar", "email"=>"foo.bar@gsa.gov"},
-      {"name"=>"bazquux", "email"=>"baz.quux@gsa.gov"}]}
+      {"name"=>"bazquux", "email"=>"baz.quux@gsa.gov"}
+     ]
+   }
 ```
 
 #### Running `filter-yaml-files`
