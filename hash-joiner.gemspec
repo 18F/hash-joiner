@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
   s.authors = ['Mike Bland']
   s.email = 'michael.bland@gsa.gov'
   s.files = `git ls-files -z README.md lib`.split("\x0")
-  s.executables << 'filter-yaml-files'
+  s.executables = ['filter-yaml-files', 'consolidate-yaml-files']
   s.homepage = 'https://github.com/18F/hash-joiner'
   s.license = 'CC0'
   s.add_runtime_dependency 'safe_yaml'
