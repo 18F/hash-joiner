@@ -68,7 +68,7 @@ This will render `private:` data at the same level as other, nonprivate data:
 
 #### Perform a deep merge with other Hash values
 
-```bash
+```ruby
 > extra_info = {
   "languages" => ["C++", "Python"],
   "full_name" => "Michael S. Bland",
